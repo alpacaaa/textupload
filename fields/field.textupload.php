@@ -1,9 +1,9 @@
 <?php
-	
+
 	require_once(TOOLKIT . '/fields/field.upload.php');
-	
+
 	Class fieldTextUpload extends fieldUpload {
-	
+
 		protected $_sizes = array();
 
 	/*-------------------------------------------------------------------------
@@ -12,13 +12,13 @@
 
 		public function __construct(&$parent){
 			parent::__construct($parent);
-			
+
 			$this->_name = 'Text Upload';
-			
+
 			$this->set('show_column', 'no');
 			$this->set('text_size', 'medium');
 			$this->set('location', 'main');
-			
+
 			$this->_sizes = array(
 				array('small', false, __('Small Box')),
 				array('medium', false, __('Medium Box')),
@@ -33,14 +33,11 @@
 
 		public function createTable(){
 			$field_id = $this->get('id');
-			
+
 			return Symphony::Database()->query(
 				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_{$field_id}` (
 					`id` INT(11) unsigned NOT NULL auto_increment,
 					`entry_id` INT(11) unsigned NOT NULL,
-					`value` MEDIUMTEXT DEFAULT NULL,
-					`value_formatted` MEDIUMTEXT DEFAULT NULL,
-					`word_count` INT(11) UNSIGNED DEFAULT NULL,
 					`file` varchar(255) default NULL,
 					`size` int(11) unsigned NULL,
 					`mimetype` varchar(50) default NULL,
@@ -48,9 +45,7 @@
 					`timestamp` int(11) UNSIGNED DEFAULT NULL,
 					PRIMARY KEY  (`id`),
 					KEY `entry_id` (`entry_id`),
-					KEY `file` (`file`),
-					FULLTEXT KEY `value` (`value`),
-					FULLTEXT KEY `value_formatted` (`value_formatted`)
+					KEY `file` (`file`)
 				) ENGINE=MyISAM;"
 			);
 		}
@@ -61,16 +56,16 @@
 
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
 			Field::displaySettingsPanel($wrapper, $errors);
-			
+
 			/*---------------------------------------------------------------
 				Upload Options
 			---------------------------------------------------------------*/
-			
+
 			// Build fieldset and legend
 			$fieldset = new XMLElement('fieldset');
 			$legend = new XMLElement('legend', __('Upload Options'));
 			$fieldset->appendChild($legend);
-			
+
 			// Build group div
 			$group = new XMLElement('div');
 			$group->setAttribute('class', 'group');
@@ -84,7 +79,7 @@
 				'/workspace/utilities'
 			);
 			$directories = General::listDirStructure(WORKSPACE, null, true, DOCROOT, $ignore);
-			
+
 			// Populate destination options array
 			$options = array();
 			$options[] = array('/workspace', false, '/workspace');
@@ -100,10 +95,10 @@
 					}
 				}
 			}
-			
+
 			// Build destinations label
 			$label = Widget::Label(__('Destination Directory'));
-			
+
 			// Build destination select
 			$label->appendChild(
 				Widget::Select(
@@ -111,7 +106,7 @@
 					$options
 				)
 			);
-			
+
 			if(isset($errors['file_destination'])) {
 				$group->appendChild(
 					Widget::wrapFormElementWithError(
@@ -131,11 +126,11 @@
 				'CSS'	=> '/\.(?:css)$/i',
 				'JS'	=> '/\.(?:js)$/i'
 			);
-			
+
 			// Build container and label
 			$label = Widget::Label(__('Validation Rule'));
 			$label->appendChild(new XMLElement('i', __('Optional')));
-			
+
 			// Build and append input
 			$label->appendChild(
 				Widget::Input(
@@ -162,31 +157,31 @@
 			$group->appendChild($div);
 			$fieldset->appendChild($group);
 			$wrapper->appendChild($fieldset);
-			
+
 			/*---------------------------------------------------------------
 				Text Options
 			---------------------------------------------------------------*/
-			
+
 			// Build fieldset and legend
 			$fieldset = new XMLElement('fieldset');
 			$legend = new XMLElement('legend', __('Text Options'));
 			$fieldset->appendChild($legend);
-			
+
 			// Build group div
 			$group = new XMLElement('div');
 			$group->setAttribute('class', 'group');
-			
+
 			// Build Formatter select
 			$group->appendChild($this->buildFormatterSelect(
 				$this->get('text_formatter'),
 				'fields[' . $this->get('sortorder') . '][text_formatter]',
 				'Text Formatter'
 			));
-			
-			
+
+
 			// Build mode select
 			$label = Widget::Label(__('Mode'));
-			
+
 			$options = array(
 				array(
 					'editable',
@@ -204,20 +199,20 @@
 					__('Hidden')
 				)
 			);
-			
+
 			$select = Widget::Select(
 				'fields[' . $this->get('sortorder') . '][text_mode]',
 				$options
 			);
 			$label->appendChild($select);
-			
+
 			$group->appendChild($label);
 			$fieldset->appendChild($group);
-			
+
 			// Build group div
 			$group = new XMLElement('div');
 			$group->setAttribute('class', 'group');
-			
+
 			// Build CDATA checkbox
 			$label = Widget::Label();
 			$input = Widget::Input(
@@ -236,7 +231,7 @@
 				)
 			);
 			$group->appendChild($label);
-			
+
 			// Textarea Size
 			$values = $this->_sizes;
 
@@ -250,11 +245,11 @@
 			));
 
 			$group->appendChild($label);
-			
+
 			$fieldset->appendChild($group);
-			
+
 			$wrapper->appendChild($fieldset);
-			
+
 			/*---------------------------------------------------------------
 				Standard Options
 			---------------------------------------------------------------*/
@@ -265,7 +260,7 @@
 			$fieldset->appendChild($div);
 			$wrapper->appendChild($fieldset);
 		}
-		
+
 		public function checkFields(&$errors, $checkForDuplicates=true){
 			if(!is_dir(DOCROOT . $this->get('file_destination') . '/')){
 				$errors['file_destination'] = __('Directory <code>%s</code> does not exist.', array($this->get('destination')));
@@ -318,7 +313,7 @@
 					array($this->get('file_destination'))
 				);
 			}
-			
+
 			// Make sure directory is writeable
 			elseif(!$error && !is_writable(DOCROOT . $this->get('file_destination') . '/')) {
 				$error = __(
@@ -326,7 +321,7 @@
 					array($this->get('file_destination'))
 				);
 			}
-			
+
 			$mode = $this->get('text_mode');
 
 			// Build label
@@ -337,25 +332,20 @@
 				$label->appendChild(new XMLElement('i', __('Optional')));
 			}
 			$wrapper->appendChild($label);
-			
+
 			// Create a frame div
 			$div = new XMLElement('div', NULL, array('class' => 'frame'));
 			$div->setAttribute(
 				'id',
 				'fields' . $fieldnamePrefix . '[' . $this->get('element_name') . ']' . $fieldnamePostfix
 			);
-			
+
 			// Create a span for the file info
 			$span = new XMLElement('span', NULL, array('class' => 'file'));
-			
+
 			// If file exists
 			if($data['file']) {
-				
-				// If the file's been updated in the meantime
-				if(filemtime(WORKSPACE . $data['file']) > $data['timestamp']) {
-					$this->updateFromFile($data);
-				}
-				
+
 				$span->appendChild(
 					Widget::Anchor(
 						'/workspace' . $data['file'],
@@ -363,14 +353,14 @@
 					)
 				);
 				$div->appendChild($span);
-				
+
 				// If the text is not hidden, display textarea
 				if($mode !== 'hidden') {
 					$textarea = Widget::Textarea(
 						'fields' . $fieldnamePrefix . '[' . $this->get('element_name') . ']' . $fieldnamePostfix,
 						'20',
 						'50',
-						$data['value_formatted']
+						file_get_contents(WORKSPACE. $data['file'])
 					);
 					$textarea->setAttribute('class', 'code ' . $this->get('text_size'));
 					if($mode == 'disabled') {
@@ -400,11 +390,11 @@
 				$wrapper->appendChild($div);
 			}
 		}
-		
+
 	/*-------------------------------------------------------------------------
 		Input
 	-------------------------------------------------------------------------*/
-		
+
 		function checkPostFieldData($data, &$message, $entry_id=NULL){
 
 			$message = NULL;
@@ -463,7 +453,7 @@
 
 					return self::__ERROR_CUSTOM__;
 				}
-				
+
 				## Sanitize the filename
 				$data['name'] = Lang::createFilename($data['name']);
 
@@ -492,7 +482,7 @@
 				}	
 
 			}
-			
+
 			return self::__OK__;
 
 		}
@@ -504,9 +494,6 @@
 			// fixes bug where files are deleted, but their database entries are not.
 			if($data === NULL) {
 				return array(
-					'value'				=> NULL,
-					'value_formatted'	=> NULL,
-					'word_count'		=> NULL,
 					'file'				=> NULL,
 					'size'				=> NULL,
 					'mimetype'			=> NULL,
@@ -530,12 +517,7 @@
 						$result = $row;
 					}
 				}
-				
-				
-				// Set the value based on the textarea content
-				$result['value'] = $data;
-				$result['value_formatted'] = $this->applyFormatting($data);
-				
+
 				// Update the file
 				$this->updateFile(WORKSPACE . $result['file'], $data);
 
@@ -590,14 +572,8 @@
 			if (strlen(trim($data['type'])) == 0) {
 				$data['type'] = 'unknown';
 			}
-			
-			// Get text contents
-			$contents = file_get_contents($abs_path . '/' . $data['name']);
 
 			return array(
-				'value'				=> $contents,
-				'value_formatted'	=> $this->applyFormatting($contents),
-				'word_count'		=> General::countWords($contents),
 				'file'				=> $file,
 				'size'				=> $data['size'],
 				'mimetype'			=> $data['type'],
@@ -610,7 +586,7 @@
 	/*-------------------------------------------------------------------------
 		Output:
 	-------------------------------------------------------------------------*/
-		
+
 		public function fetchIncludableElements() { 
 			return array(
 				$this->get('element_name') . ': formatted',
@@ -620,45 +596,42 @@
 		}
 
 		public function appendFormattedElement(&$wrapper, $data, $encode = false, $mode = null) {
-		
+
 			// It is possible an array of NULL data will be passed in. Check for this.
 			if(!is_array($data) || !isset($data['file']) || is_null($data['file'])) {
 				return;
 			}
-			
-			// If the file's been modified more recently than the entry, update the field data
-			if(filemtime(WORKSPACE . $data['file']) > $data['timestamp']) {
-				$this->updateFromFile($data);
-			}
+
+			$value = file_get_contents(WORKSPACE. $data['file']);
 
 			// Check content options
 			if($mode == 'unformatted') {
-				$value = trim($data['value']);
+				$value = trim($value);
 			}
 			else {
-				$value = trim($data['value_formatted']);
+				$value = trim($this->applyFormatting($value));
 			}
 
 			if($this->get('text_cdata') == 'yes') {
 				$value = '<![CDATA[' . $value . ']]>';
 			}
-			
+
 			// Main XML element
 			$item = new XMLElement($this->get('element_name'));
 
 			if($mode != 'file-only') {
-			
+
 				// Textual content
 				$attributes = array(
 					'mode'			=> $mode,
-					'word-count'	=> $data['word_count']
+					'word-count'	=> General::countWords($data)
 				);
-			
+
 				$item->appendChild(new XMLElement(
 					'content', $value, $attributes
 				));
 			}
-			
+
 			// File information
 			$file_element = new XMLElement('file');
 			$file = WORKSPACE . $data['file'];
@@ -675,7 +648,7 @@
 			if(is_array($m) && !empty($m)){
 				$file_element->appendChild(new XMLElement('meta', NULL, $m));
 			}
-			
+
 			$item->appendChild($file_element);
 
 			$wrapper->appendChild($item);
@@ -685,10 +658,10 @@
 	/*-------------------------------------------------------------------------
 		Events:
 	-------------------------------------------------------------------------*/
-		
+
 		public function applyFormatting($data) {
 			if ($this->get('text_formatter') != 'none') {
-				
+
 				$tfm = new TextformatterManager($this->_engine);
 
 				$formatter = $tfm->create($this->get('text_formatter'));
@@ -701,18 +674,6 @@
 			return General::sanitize($data);
 		}
 
-		public function updateFromFile($data) {
-			$contents = file_get_contents(WORKSPACE . $data['file']);
-			$data['value'] = $contents;
-			$data['value_formatted'] = $this->applyFormatting($contents);
-			$data['timestamp'] = time();
-		
-			Symphony::Database()->update(
-				$data,
-				'tbl_entries_data_' . $this->get('id')
-			);
-		}
-		
 		public function updateFile($path, $content) {
 			// TODO Error checking
 			General::deleteFile($path);
