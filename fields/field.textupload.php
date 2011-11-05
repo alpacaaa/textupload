@@ -523,7 +523,8 @@
 
 				return $result;
 			}
-			if($simulate) return;
+
+			if($simulate && is_null($entry_id)) return $data;
 
 			// Upload the new file
 			$abs_path = DOCROOT . '/' . trim($this->get('file_destination'), '/');
